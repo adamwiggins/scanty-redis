@@ -1,20 +1,49 @@
+require 'json'
+
 require File.dirname(__FILE__) + '/../vendor/maruku/maruku'
 
 $LOAD_PATH.unshift File.dirname(__FILE__) + '/../vendor/syntax'
 require 'syntax/convertors/html'
 
-class Post < Sequel::Model
-	unless table_exists?
-		set_schema do
-			primary_key :id
-			text :title
-			text :body
-			text :slug
-			text :tags
-			timestamp :created_at
-		end
-		create_table
+class Post
+	def self.attrs
+		[ :slug, :title, :body, :tags, :created_at ]
 	end
+
+	def attrs
+		self.class.attrs.inject({}) do |a, key|
+			a[key] = send(key)
+			a
+		end
+	end
+
+	attr_accessor *attrs
+
+	def initialize(params={})
+		params.each do |key, value|
+			send("#{key}=", value)
+		end
+	end
+
+	def self.find_by_slug(slug)
+		new JSON.parse(DB[db_key])
+	end
+
+	def self.find_range(start, len)
+		DB["#{self.class}:chrono"].map do |slug|
+			find_by_slug(slug)
+		end
+	end
+
+	def db_key
+		"#{self.class}:slug:#{slug}"
+	end
+
+	def save
+		DB[db_key] = attrs.to_json
+	end
+
+	############
 
 	def url
 		d = created_at

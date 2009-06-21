@@ -1,11 +1,8 @@
 require 'rubygems'
 require 'sinatra'
 
-$LOAD_PATH.unshift File.dirname(__FILE__) + '/vendor/sequel'
-require 'sequel'
-
 configure do
-	Sequel.connect(ENV['DATABASE_URL'] || 'sqlite://blog.db')
+	DB = Redis.new
 
 	require 'ostruct'
 	Blog = OpenStruct.new(
@@ -44,7 +41,7 @@ layout 'layout'
 ### Public
 
 get '/' do
-	posts = Post.reverse_order(:created_at).limit(10)
+	posts = Post.find_range(0, 10)
 	erb :index, :locals => { :posts => posts }, :layout => false
 end
 
@@ -114,7 +111,7 @@ end
 
 post '/past/:year/:month/:day/:slug/' do
 	auth
-	post = Post.filter(:slug => params[:slug]).first
+	post = Post.find_by_slug(params[:slug])
 	stop [ 404, "Page not found" ] unless post
 	post.title = params[:title]
 	post.tags = params[:tags]
