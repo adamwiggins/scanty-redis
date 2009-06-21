@@ -48,6 +48,12 @@ class Post
 		find_range(0, 9999999)
 	end
 
+	def self.all_tagged(tag)
+		DB.list_range("#{self}:tagged:#{tag}", 0, 99999).map do |slug|
+			find_by_slug(slug)
+		end
+	end
+
 	def db_key
 		"#{self.class}:slug:#{slug}"
 	end
@@ -63,8 +69,16 @@ class Post
 	def self.create(params)
 		post = new(params)
 		post.save
-		DB.push_head(chrono_key, post.slug)
+		post.build_indexes
 		post
+	end
+
+	def build_indexes
+		DB.push_head(self.class.chrono_key, slug)
+
+		tags.split.each do |tag|
+			DB.push_head("#{self.class}:tagged:#{tag}", slug)
+		end
 	end
 
 	def destroy

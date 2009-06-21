@@ -58,14 +58,14 @@ get '/past/:year/:month/:day/:slug' do
 end
 
 get '/past' do
-	posts = Post.reverse_order(:created_at)
+	posts = Post.all
 	@title = "Archive"
 	erb :archive, :locals => { :posts => posts }
 end
 
 get '/past/tags/:tag' do
-	tag = params[:tag]
-	posts = Post.filter(:tags.like("%#{tag}%")).reverse_order(:created_at).limit(30)
+	tag = params[:tag].downcase.strip
+	posts = Post.all_tagged(tag)
 	@title = "Posts tagged #{tag}"
 	erb :tagged, :locals => { :posts => posts, :tag => tag }
 end
