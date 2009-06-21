@@ -1,11 +1,3 @@
-require 'json'
-require 'activesupport'   # for Time.parse, unfortunately
-
-require File.dirname(__FILE__) + '/../vendor/maruku/maruku'
-
-$LOAD_PATH.unshift File.dirname(__FILE__) + '/../vendor/syntax'
-require 'syntax/convertors/html'
-
 class Post
 	def self.attrs
 		[ :slug, :title, :body, :tags, :created_at ]

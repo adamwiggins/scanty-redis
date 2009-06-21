@@ -1,11 +1,9 @@
 require 'rubygems'
 require 'sinatra'
 
-configure do
-	require 'redis'
-	DB = Redis.new
+require File.dirname(__FILE__) + '/lib/all'
 
-	require 'ostruct'
+configure do
 	Blog = OpenStruct.new(
 		:title => 'a scanty blog',
 		:author => 'John Doe',
@@ -23,9 +21,6 @@ error do
 	puts e.backtrace.join("\n")
 	"Application error"
 end
-
-$LOAD_PATH.unshift(File.dirname(__FILE__) + '/lib')
-require 'post'
 
 helpers do
 	def admin?

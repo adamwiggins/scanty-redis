@@ -38,10 +38,7 @@ task :stop do
 end
 
 task :environment do
-	require 'redis'
-	DB = Redis.new
-	$LOAD_PATH.unshift(File.dirname(__FILE__) + '/lib')
-	require 'post'
+	require File.dirname(__FILE__) + '/lib/all'
 end
 
 task :import => :environment do
