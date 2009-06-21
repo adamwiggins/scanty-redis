@@ -2,6 +2,7 @@ require 'rubygems'
 require 'sinatra'
 
 configure do
+	require 'redis'
 	DB = Redis.new
 
 	require 'ostruct'
@@ -46,7 +47,7 @@ get '/' do
 end
 
 get '/past/:year/:month/:day/:slug/' do
-	post = Post.filter(:slug => params[:slug]).first
+	post = Post.find_by_slug(params[:slug])
 	stop [ 404, "Page not found" ] unless post
 	@title = post.title
 	erb :post, :locals => { :post => post }
@@ -97,14 +98,13 @@ end
 
 post '/posts' do
 	auth
-	post = Post.new :title => params[:title], :tags => params[:tags], :body => params[:body], :created_at => Time.now, :slug => Post.make_slug(params[:title])
-	post.save
+	post = Post.create :title => params[:title], :tags => params[:tags], :body => params[:body], :created_at => Time.now, :slug => Post.make_slug(params[:title])
 	redirect post.url
 end
 
 get '/past/:year/:month/:day/:slug/edit' do
 	auth
-	post = Post.filter(:slug => params[:slug]).first
+	post = Post.find_by_slug(params[:slug])
 	stop [ 404, "Page not found" ] unless post
 	erb :edit, :locals => { :post => post, :url => post.url }
 end

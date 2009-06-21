@@ -38,8 +38,8 @@ task :stop do
 end
 
 task :environment do
-	require 'sequel'
-	DB = Sequel.connect('sqlite://blog.db')
+	require 'redis'
+	DB = Redis.new
 	$LOAD_PATH.unshift(File.dirname(__FILE__) + '/lib')
 	require 'post'
 end

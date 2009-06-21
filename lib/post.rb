@@ -1,4 +1,5 @@
 require 'json'
+require 'activesupport'   # for Time.parse, unfortunately
 
 require File.dirname(__FILE__) + '/../vendor/maruku/maruku'
 
@@ -19,28 +20,62 @@ class Post
 
 	attr_accessor *attrs
 
+	def created_at=(t)
+		@created_at = t.is_a?(Time) ? t : Time.parse(t)
+	end
+
 	def initialize(params={})
 		params.each do |key, value|
 			send("#{key}=", value)
 		end
 	end
 
+	class RecordNotFound < RuntimeError; end
+
 	def self.find_by_slug(slug)
-		new JSON.parse(DB[db_key])
+		json = DB[new(:slug => slug).db_key]
+		raise RecordNotFound unless json
+		new JSON.parse(json)
 	end
 
 	def self.find_range(start, len)
-		DB["#{self.class}:chrono"].map do |slug|
+		DB.list_range(chrono_key, start, start + len - 1).map do |slug|
 			find_by_slug(slug)
 		end
+	end
+
+	def self.all
+		find_range(0, 9999999)
 	end
 
 	def db_key
 		"#{self.class}:slug:#{slug}"
 	end
 
+	def self.chrono_key
+		"#{self}:chrono"
+	end
+
 	def save
 		DB[db_key] = attrs.to_json
+	end
+
+	def self.create(params)
+		post = new(params)
+		post.save
+		DB.push_head(chrono_key, post.slug)
+		post
+	end
+
+	def destroy
+		DB.list_rm(self.class.chrono_key, db_key, 0)
+		DB.delete(db_key)
+	end
+
+	def self.destroy_all
+		all.each do |post|
+			post.destroy
+		end
 	end
 
 	############

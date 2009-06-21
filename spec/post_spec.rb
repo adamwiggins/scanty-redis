@@ -31,6 +31,11 @@ describe Post do
 		@post.save
 	end
 
+	it "finds a post by slug" do
+		DB.should_receive(:[]).with('Post:slug:abc').and_return('{"slug":"abc"}')
+		Post.find_by_slug('abc').slug.should == 'abc'
+	end
+
 =begin
 	it "has a url in simplelog format: /past/2008/10/17/my_post/" do
 		@post.created_at = '2008-10-22'
