@@ -47,8 +47,9 @@ task :import => :environment do
 	require 'rest_client'
 	posts = YAML.load RestClient.get(url)
 
-	posts.each do |post|
-		DB[:posts] << post
+	posts.reverse.each do |post|
+		post.delete(:id)
+		Post.create post
 	end
 end
 
