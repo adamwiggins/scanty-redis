@@ -2,6 +2,7 @@ require 'json'
 require 'ostruct'
 require 'active_support/core_ext/time'
 
+$LOAD_PATH.unshift File.dirname(__FILE__) + '/../vendor/redis'
 require 'redis'
 
 redis_config = if ENV['REDIS_URL']
