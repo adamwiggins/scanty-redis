@@ -25,7 +25,7 @@ class Post
 	class RecordNotFound < RuntimeError; end
 
 	def self.find_by_slug(slug)
-		json = DB[new(:slug => slug).db_key]
+		json = DB[db_key_for_slug(slug)]
 		raise RecordNotFound unless json
 		new JSON.parse(json)
 	end
@@ -46,8 +46,12 @@ class Post
 		end
 	end
 
+	def self.db_key_for_slug(slug)
+		"#{self}:slug:#{slug}"
+	end
+
 	def db_key
-		"#{self.class}:slug:#{slug}"
+		self.class.db_key_for_slug(slug)
 	end
 
 	def self.chrono_key

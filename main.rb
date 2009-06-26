@@ -5,7 +5,7 @@ require File.dirname(__FILE__) + '/lib/all'
 
 configure do
 	Blog = OpenStruct.new(
-		:title => 'a scanty blog',
+		:title => 'a scanty blog on redis',
 		:author => 'John Doe',
 		:url_base => 'http://localhost:4567/',
 		:admin_password => 'changeme',
