@@ -24,26 +24,30 @@ class Post
 
 	class RecordNotFound < RuntimeError; end
 
-	def self.find_by_slug(slug)
-		json = DB[db_key_for_slug(slug)]
+	def self.new_from_json(json)
 		raise RecordNotFound unless json
 		new JSON.parse(json)
 	end
 
+	def self.new_from_slugs(slugs)
+		ids = slugs.map { |slug| db_key_for_slug(slug) }
+		DB.mget(ids).map { |json| new_from_json(json) }
+	end
+
+	def self.find_by_slug(slug)
+		new_from_json DB[db_key_for_slug(slug)]
+	end
+
 	def self.find_range(start, len)
-		DB.list_range(chrono_key, start, start + len - 1).map do |slug|
-			find_by_slug(slug)
-		end
+		new_from_slugs DB.list_range(chrono_key, start, start + len - 1)
 	end
 
 	def self.all
 		find_range(0, 9999999)
 	end
 
-	def self.all_tagged(tag)
-		DB.list_range("#{self}:tagged:#{tag}", 0, 99999).map do |slug|
-			find_by_slug(slug)
-		end
+	def self.find_tagged(tag)
+		new_from_slugs DB.list_range("#{self}:tagged:#{tag}", 0, 99999)
 	end
 
 	def self.db_key_for_slug(slug)

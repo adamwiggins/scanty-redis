@@ -60,7 +60,7 @@ end
 
 get '/past/tags/:tag' do
 	tag = params[:tag].downcase.strip
-	posts = Post.all_tagged(tag)
+	posts = Post.find_tagged(tag)
 	@title = "Posts tagged #{tag}"
 	erb :tagged, :locals => { :posts => posts, :tag => tag }
 end
