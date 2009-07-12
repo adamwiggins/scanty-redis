@@ -30,6 +30,7 @@ class Post
 	end
 
 	def self.new_from_slugs(slugs)
+		return [] if slugs.empty?
 		ids = slugs.map { |slug| db_key_for_slug(slug) }
 		DB.mget(ids).map { |json| new_from_json(json) }
 	end
@@ -83,6 +84,9 @@ class Post
 
 	def destroy
 		DB.list_rm(self.class.chrono_key, db_key, 0)
+		tags.split.each do |tag|
+			DB.list_rm("#{self.class}:tagged:#{tag}", slug, 0)
+		end
 		DB.delete(db_key)
 	end
 
