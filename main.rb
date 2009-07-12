@@ -30,6 +30,10 @@ helpers do
 	def auth
 		stop [ 401, 'Not authorized' ] unless admin?
 	end
+
+	def cache_page(seconds=5*60)
+		response['Cache-Control'] = "public, max-age=#{seconds}" unless development?
+	end
 end
 
 layout 'layout'
@@ -37,11 +41,13 @@ layout 'layout'
 ### Public
 
 get '/' do
+	cache_page
 	posts = Post.find_range(0, 10)
 	erb :index, :locals => { :posts => posts }, :layout => false
 end
 
 get '/past/:year/:month/:day/:slug/' do
+	cache_page
 	post = Post.find_by_slug(params[:slug])
 	stop [ 404, "Page not found" ] unless post
 	@title = post.title
@@ -49,16 +55,19 @@ get '/past/:year/:month/:day/:slug/' do
 end
 
 get '/past/:year/:month/:day/:slug' do
+	cache_page
 	redirect "/past/#{params[:year]}/#{params[:month]}/#{params[:day]}/#{params[:slug]}/", 301
 end
 
 get '/past' do
+	cache_page
 	posts = Post.all
 	@title = "Archive"
 	erb :archive, :locals => { :posts => posts }
 end
 
 get '/past/tags/:tag' do
+	cache_page
 	tag = params[:tag].downcase.strip
 	posts = Post.find_tagged(tag)
 	@title = "Posts tagged #{tag}"
@@ -66,12 +75,14 @@ get '/past/tags/:tag' do
 end
 
 get '/feed' do
+	cache_page
 	@posts = Post.find_range(0, 10)
 	content_type 'application/atom+xml', :charset => 'utf-8'
 	builder :feed
 end
 
 get '/rss' do
+	cache_page
 	redirect '/feed', 301
 end
 
