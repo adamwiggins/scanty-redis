@@ -5,12 +5,12 @@ require File.dirname(__FILE__) + '/lib/all'
 
 configure do
 	Blog = OpenStruct.new(
-		:title => 'a scanty blog on redis',
-		:author => 'John Doe',
-		:url_base => 'http://localhost:4567/',
-		:admin_password => 'changeme',
+		:title => ENV['TITLE'] || 'a scanty blog on redis',
+		:author => ENV['AUTHOR'] || 'John Doe',
+		:url_base => ENV['URL_BASE'] || 'http://localhost:4567/',
+		:admin_password => ENV['ADMIN_PASSWORD'] || 'changeme',
 		:admin_cookie_key => 'scanty_admin',
-		:admin_cookie_value => '51d6d976913ace58',
+		:admin_cookie_value => ENV['ADMIN_COOKIE_VALUE'] || '51d6d976913ace58',
 		:disqus_shortname => nil
 	)
 end
