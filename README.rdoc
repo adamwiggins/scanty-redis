@@ -1,4 +1,4 @@
-= Scanty, a really small blog
+= Scanty, a really small blog, using the Redis database
 
 == Overview
 
@@ -8,76 +8,61 @@ http://adam.blog.heroku.com
 It is not a blogging engine, but it's small and easy to modify, so it could be
 the starting point for your blog, too.
 
-== Features
-
-* Posts (shock!)
-* Tags
-* Markdown (via Maruku)
-* Ruby code syntax highlighting (via Syntax)
-* Atom feed
-* Comments via Disqus
-* Web framework = Sinatra
-* ORM = Sequel
+This fork modifies lib/post.rb to use Redis, a featureful key-value database,
+instead of SQL.
 
 == Dependencies
 
   $ gem install sinatra
 
-Sequel, Maruku, and Syntax are all vendored.
+Redis-rb, Maruku, and Syntax are all vendored.
+
+Get Redis from: http://code.google.com/p/redis/downloads/list
+
+Unarchive the tarball and run make inside the directory.  When finished you can
+type ./redis-server to run it on the default port on localhost.
 
 == Setup
 
-Edit main.rb and change the Blog config struct at the top to your liking.  For
-security purposes, change the admin password and the admin cookie key and
-value.  These last two can be set to any random value you like, just choose
-something other than the default.
-
-Then run the server:
+Edit main.rb and change the Blog config struct at the top to your liking, or
+set the appropriate environmant variables.  To run the server:
 
   $ ruby main.rb
 
-And visit: http://localhost:4567
-
-Log in with the password you selected, then click New Post.  The rest should be
-self-explanatory.
-
-In production, you'll probably want to run "rake start" to start (and restart)
-the server.  Change the value of "port" at the top of the Rakefile to run on a
-different port.
+Then: http://localhost:4567
 
 == Database
 
-The default is a SQLite file named blog.db.  To use something else, set
-DATABASE_URL in your environment when running the app, i.e.:
+Scanty Redis will connect to Redis on localhost on the default port if you
+don't specify another location.  To use something else, set REDIS_URL in your
+environment when running the app, i.e.:
 
-  $ DATABASE_URL='mysql://localhost/myblog' ruby main.rb
+  $ REDIS_URL='redis://:secret@1.2.3.4:9000/3' ruby main.rb
 
-Or, modify the Sequel.connect statement at the top of main.rb.
+This would connect to host 1.2.3.4 on port 9000, uses database number 3 (Redis
+databases are numbered, not named), using password "secret" (which is defined
+in the config file optionally passed to Redis when you start the server).
+Redis has no usernames so there in othing before the colon.
 
-The database will be created automatically when the server is executed.
+Redis creates databases automatically as needed, but if you want to introspect
+or clear the database, you can use the console and the DB constant:
 
-== Comments
+  $ irb -r main.rb 
+  irb(main):001:0> DB.keys('*')
+  => ["Post:chrono", "Post:slug:first_post"]
+  irb(main):002:0> DB.flush_db
+  => "OK"
+  irb(main):003:0> DB.keys('*')
+  => []
 
-There are no comments by default.  If you wish to activate comments, create an
-account and a website on Disqus (disqus.com) and enter the website shortname as
-the :disqus_shortname value in the Blog config struct.
+== See also
 
-== Import data
-
-Christopher Swenson has a Wordpress importer: http://github.com/swenson/scanty_wordpress_import
-
-Other kinds of data can be imported easily, take a look at the rake task :import for an example of loading from a YAML file with field names that match the database schema.
-
-== Customize
-
-There are no themes or settings beyond the basic ones in the Blog struct.  Just
-edit the CSS or the code as you see fit.
+* Scanty on SQL: http://github.com/adamwiggins/scanty
+* Scanty on CouchDB: http://github.com/jtulloch/scanty
 
 == Meta
 
-Written by Adam Wiggins
-
-Patches contributed by: Christopher Swenson, S. Brent Faulkner, and Stephen Eley
+Created by Adam Wiggins
 
 Released under the MIT License: http://www.opensource.org/licenses/mit-license.php
 
